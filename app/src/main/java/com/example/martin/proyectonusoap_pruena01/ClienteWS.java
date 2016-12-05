@@ -28,26 +28,24 @@ import java.util.ArrayList;
 
 public class ClienteWS extends Activity  {
 
-    ListView LSTPERSONAS;
-    ArrayList<PersonaBean> lista=null;
-    PersonaDAO objpersonadao=null;
-    PersonaBean objpersonabean=null;
-    ProgressDialog progressDialog;
-
-    TextView tv;
-
     private static final String SOAP_ACTION = "http://examenfinal2016.esy.es/PROYECTOUNIFICADONUSOAPWS/CONTROLADOR/PersonaControladorWS.php/ObtenerMensaje";
     private static final String METHOD_NAME = "ListarPersonas";
     private static final String NAMESPACE = "http://examenfinal2016.esy.es/PROYECTOUNIFICADONUSOAPWS/";
     private static final String URL = "http://examenfinal2016.esy.es/PROYECTOUNIFICADONUSOAPWS/CONTROLADOR/PersonaControladorWS.php";
+    ListView LSTPERSONAS;
+    ArrayList<PersonaBean> listado = null;
+    PersonaDAO objpersonadao=null;
+    PersonaBean objpersonabean=null;
+    ProgressDialog progressDialog;
+    TextView tv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cliente);
 
-        tv = (TextView)findViewById(R.id.textView);
-        LSTPERSONAS = (ListView)findViewById(R.id.LSTVW);
+        tv = (TextView) findViewById(R.id.textView);
+        LSTPERSONAS = (ListView) findViewById(R.id.LSTVW);
 
 
         if (android.os.Build.VERSION.SDK_INT > 9) {
@@ -56,78 +54,59 @@ public class ClienteWS extends Activity  {
             StrictMode.setThreadPolicy(policy);
         }
 
-        /*try{
+        listado = ListarPersonas();
 
-            objpersonadao = new PersonaDAO();
-            lista = objpersonadao.ListarPersonas();
-
-            if(lista.isEmpty()==true)
-            {      Toast.makeText(getBaseContext(),
-                    "No se encontraron los Registros.",Toast.LENGTH_SHORT) .show();
-                LSTPERSONAS.setAdapter(null );
-            }
-            else
-            {        //progressDialog.setTitle("Cargando");
-                LSTPERSONAS.
-                        setAdapter( new Personalizacion(getApplicationContext(),  lista) );
-
-            }
+        LSTPERSONAS.setAdapter(new Personalizacion(getApplicationContext(), listado));
 
 
-        }catch (Exception ex){
+    }
 
-            Toast.makeText(getApplicationContext(), "AQUI PASA ALGO , OTRA VEZ :V", Toast.LENGTH_SHORT).show();
+    public ArrayList<PersonaBean> ListarPersonas() {
 
-        }*/
-
-
+        ArrayList<PersonaBean> lista = null;
 
         SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
-
 
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.setOutputSoapObject(request);
 
         HttpTransportSE httpTransport = new HttpTransportSE(URL);
 
-        try
-        {
-            String TRAMA ="";
+        try {
+            String TRAMA = "";
 
             httpTransport.call(SOAP_ACTION, envelope);
             Object response = envelope.getResponse();
-            Toast.makeText(getApplicationContext(), "Contenido" +response, Toast.LENGTH_SHORT).show();
-            tv.setText(response.toString()+"\n");
+            //Toast.makeText(getApplicationContext(), "Contenido" +response, Toast.LENGTH_SHORT).show();
+            //tv.setText(response.toString() + "\n");
 
-            TRAMA=response.toString();
+            TRAMA = response.toString();
 
             // Parseamos la respuesta obtenida del servidor a un objeto JSON
             JSONObject jsonObject = new JSONObject(TRAMA);
 
             JSONArray personas = jsonObject.getJSONArray("PERSONA");
 
-            lista=new ArrayList<PersonaBean>();
+            lista = new ArrayList<PersonaBean>();
             //
-            for(int i = 0; i < personas.length(); i++)
-            {  	JSONObject worker =personas.getJSONObject(i);
-                PersonaBean   objPersona=new PersonaBean();
+            for (int i = 0; i < personas.length(); i++) {
+                JSONObject worker = personas.getJSONObject(i);
+                PersonaBean objPersona = new PersonaBean();
                 objPersona.setCODPERSO(worker.getString("CODPERSO"));
                 objPersona.setNOMBPERSO(worker.getString("NOMBPERSO"));
                 objPersona.setAPELLIPERSO(worker.getString("APELLIPERSO"));
                 lista.add(objPersona);
             }
 
-            LSTPERSONAS.setAdapter(new Personalizacion(getApplicationContext(),lista));
+            //LSTPERSONAS.setAdapter(new Personalizacion(getApplicationContext(), lista));
 
-        }
-
-        catch (Exception exception)
-        {
-            tv.setText("Error: "+exception.toString());
+        } catch (Exception exception) {
+            tv.setText("Error: " + exception.toString());
             LSTPERSONAS.setAdapter(null);
 
         }
 
+        return lista;
 
     }
 
